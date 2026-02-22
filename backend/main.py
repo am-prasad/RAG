@@ -2,7 +2,8 @@ import os
 import uuid
 from typing import List, Optional
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -36,6 +37,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/static", StaticFiles(directory="."), name="static")
+
+@app.get("/")
+def read_root():
+    return FileResponse("index.html")
 
 # --- Pydantic Models ---
 
