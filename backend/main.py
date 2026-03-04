@@ -8,7 +8,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-# LangChain & Vector Store Imports
+
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from langchain_groq import ChatGroq
@@ -17,10 +17,10 @@ from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_classic.chains import RetrievalQA
 from langchain_core.prompts import PromptTemplate
 
-# Load environment variables from .env file
+
 load_dotenv()
 
-# --- LangSmith Tracing Configuration ---
+
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
 
@@ -44,7 +44,7 @@ app.mount("/static", StaticFiles(directory="."), name="static")
 def read_root():
     return FileResponse("index.html")
 
-# --- Pydantic Models ---
+
 
 class QueryRequest(BaseModel):
     question: str
@@ -54,11 +54,11 @@ class QueryResponse(BaseModel):
     answer: str
     sources: List[str]
 
-# --- Core RAG Logic ---
+
 
 def get_vectorstore(namespace: str):
-    """Initializes connection to Pinecone Vector Store using HuggingFace Embeddings."""
-    # Using a high-performance open-source embedding model
+    
+    
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     index_name = os.getenv("PINECONE_INDEX", "pagewise-index")
     
@@ -69,12 +69,11 @@ def get_vectorstore(namespace: str):
     )
 
 def create_rag_chain(namespace: str):
-    """Constructs the RAG chain with Multi-Query Retrieval using Groq."""
-    # Using Llama 3 for inference and query expansion
+    
     llm = ChatGroq(model_name="llama-3.3-70b-versatile", temperature=0)
     vectorstore = get_vectorstore(namespace)
     
-    # Multi-Query Retriever: Uses Llama 3 to generate variations of the user query
+    
     retriever = vectorstore.as_retriever(
     search_type="mmr",
     search_kwargs={"k": 5, "fetch_k": 20}
@@ -103,7 +102,7 @@ def create_rag_chain(namespace: str):
         chain_type_kwargs={"prompt": PROMPT}
     )
 
-# --- API Endpoints ---
+
 
 @app.post("/upload-pdf", status_code=201)
 async def upload_pdf(file: UploadFile = File(...), namespace: str = "default"):
